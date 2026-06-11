@@ -4,7 +4,10 @@ set -eu
 PI_INSTALLER_URL="https://pi.dev/install.sh"
 NODE_DIST_URL="https://nodejs.org/dist/latest-v22.x"
 NODE_INSTALL_DIR="/usr/local/lib/pi-node"
-readonly PI_INSTALLER_URL NODE_DIST_URL NODE_INSTALL_DIR
+PI_WRAPPER_DIR="/usr/local/lib/pi-cli"
+PI_REAL_BIN="$PI_WRAPPER_DIR/pi-real"
+PI_REWRITE_SCRIPT="$PI_WRAPPER_DIR/rewrite-models.mjs"
+readonly PI_INSTALLER_URL NODE_DIST_URL NODE_INSTALL_DIR PI_WRAPPER_DIR PI_REAL_BIN PI_REWRITE_SCRIPT
 
 master() {
     echo "Activating feature 'pi-cli'"
@@ -180,7 +183,160 @@ expose_pi_command() {
         return 1
     fi
 
-    ln -sfn "$pi_path" /usr/local/bin/pi
+    mkdir -p "$PI_WRAPPER_DIR"
+    ln -sfn "$pi_path" "$PI_REAL_BIN"
+    install_models_rewrite_script
+    install_pi_wrapper
+}
+
+install_models_rewrite_script() {
+    cat > "$PI_REWRITE_SCRIPT" <<'EOF'
+#!/usr/bin/env node
+import { readFileSync, writeFileSync } from "node:fs";
+
+const modelsPath = process.argv[2];
+
+if (!modelsPath) {
+    process.exit(1);
+}
+
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+
+main();
+
+function main() {
+    const content = readFileSync(modelsPath, "utf8");
+    const parsed = JSON.parse(stripJsonComments(content));
+
+    if (!isRecord(parsed)) {
+        return;
+    }
+
+    const providers = parsed.providers;
+    if (!isRecord(providers)) {
+        return;
+    }
+
+    const ollama = providers.ollama;
+    if (!isRecord(ollama) || typeof ollama.baseUrl !== "string") {
+        return;
+    }
+
+    let url;
+    try {
+        url = new URL(ollama.baseUrl);
+    } catch {
+        return;
+    }
+
+    if (!LOCAL_HOSTS.has(url.hostname)) {
+        return;
+    }
+
+    url.hostname = "host.docker.internal";
+    ollama.baseUrl = url.toString();
+    writeFileSync(modelsPath, `${JSON.stringify(parsed, null, 2)}\n`, "utf8");
+}
+
+function isRecord(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stripJsonComments(input) {
+    let output = "";
+    let inString = false;
+    let isEscaped = false;
+    let inLineComment = false;
+    let inBlockComment = false;
+
+    for (let index = 0; index < input.length; index += 1) {
+        const current = input[index];
+        const next = input[index + 1] ?? "";
+
+        if (inLineComment) {
+            if (current === "\n") {
+                inLineComment = false;
+                output += current;
+            }
+            continue;
+        }
+
+        if (inBlockComment) {
+            if (current === "*" && next === "/") {
+                inBlockComment = false;
+                index += 1;
+            }
+            continue;
+        }
+
+        if (inString) {
+            output += current;
+            if (isEscaped) {
+                isEscaped = false;
+                continue;
+            }
+            if (current === "\\") {
+                isEscaped = true;
+                continue;
+            }
+            if (current === "\"") {
+                inString = false;
+            }
+            continue;
+        }
+
+        if (current === "/" && next === "/") {
+            inLineComment = true;
+            index += 1;
+            continue;
+        }
+
+        if (current === "/" && next === "*") {
+            inBlockComment = true;
+            index += 1;
+            continue;
+        }
+
+        output += current;
+        if (current === "\"") {
+            inString = true;
+        }
+    }
+
+    return output;
+}
+EOF
+    chmod +x "$PI_REWRITE_SCRIPT"
+}
+
+install_pi_wrapper() {
+    cat > /usr/local/bin/pi <<EOF
+#!/bin/sh
+set -eu
+
+PI_REAL_BIN="$PI_REAL_BIN"
+PI_REWRITE_SCRIPT="$PI_REWRITE_SCRIPT"
+PI_SOURCE_AGENT_DIR="\$HOME/.pi/agent"
+PI_CONTAINER_AGENT_DIR="\${PI_CODING_AGENT_DIR:-\$HOME/.pi-devcontainer/agent}"
+
+export PI_CODING_AGENT_DIR="\$PI_CONTAINER_AGENT_DIR"
+
+if [ ! -d "\$PI_CONTAINER_AGENT_DIR" ]; then
+    mkdir -p "\$PI_CONTAINER_AGENT_DIR"
+fi
+
+if [ -d "\$PI_SOURCE_AGENT_DIR" ] && [ ! -e "\$PI_CONTAINER_AGENT_DIR/.seeded-from-host" ]; then
+    cp -R "\$PI_SOURCE_AGENT_DIR"/. "\$PI_CONTAINER_AGENT_DIR"/
+    : > "\$PI_CONTAINER_AGENT_DIR/.seeded-from-host"
+fi
+
+if [ -f "\$PI_CONTAINER_AGENT_DIR/models.json" ]; then
+    node "\$PI_REWRITE_SCRIPT" "\$PI_CONTAINER_AGENT_DIR/models.json"
+fi
+
+exec "\$PI_REAL_BIN" "\$@"
+EOF
+    chmod +x /usr/local/bin/pi
 }
 
 master "$@"

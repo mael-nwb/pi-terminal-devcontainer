@@ -26,6 +26,8 @@ La feature n'a pas besoin d'une feature Node préinstallée. Si `node`/`npm` son
 curl -fsSL https://pi.dev/install.sh | sh
 ```
 
+Dans un Dev Container, la commande `pi` utilise ensuite une copie locale de la configuration dans `~/.pi-devcontainer/agent`. Si une configuration hôte est montée dans `~/.pi/agent`, elle est copiée une seule fois dans ce répertoire interne au conteneur puis isolée. La feature réécrit automatiquement `providers.ollama.baseUrl` de `localhost` vers `host.docker.internal` dans cette copie interne, sans modifier la configuration hôte.
+
 ## Configuration Pi hôte
 
 Pour réutiliser votre configuration Pi locale, le dossier `${HOME}/.pi` doit exister sur l'hôte avant le rebuild du Dev Container.
@@ -39,6 +41,8 @@ Ajoutez ensuite ce mount dans le `devcontainer.json` consommateur, en adaptant l
 ```
 
 Si `${HOME}/.pi` est absent, la feature installe uniquement le CLI Pi. Pi devra être configuré après ouverture du conteneur.
+
+La configuration active de Pi dans le conteneur reste `~/.pi-devcontainer/agent`. Le mount hôte sert uniquement de source initiale.
 
 ## Tests (Docker)
 
