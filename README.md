@@ -67,7 +67,7 @@ Collez cette commande dans votre terminal hors du Dev Container. Elle envoie un 
 codex "$(cat <<'EOF'
 Ajoute la feature pi-cli à mon Dev Container. Crée ou modifie .devcontainer/devcontainer.json pour inclure:
 "features": {
-  "ghcr.io/<owner>/<repo>/pi-cli:1": {}
+  "ghcr.io/mael-nwb/pi-terminal-devcontainer/pi-cli:latest": {}
 }
 Si ${HOME}/.pi existe sur l'hôte, ajoute aussi le mount:
 "source=${localEnv:HOME}/.pi,target=/home/vscode/.pi,type=bind,consistency=cached"
