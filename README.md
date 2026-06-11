@@ -44,6 +44,17 @@ Si `${HOME}/.pi` est absent, la feature installe uniquement le CLI Pi. Pi devra 
 
 La configuration active de Pi dans le conteneur reste `~/.pi-devcontainer/agent`. Le mount hôte sert uniquement de source initiale. Si `/usr/local/bin/pi` est encore un simple symlink ou si `PI_CODING_AGENT_DIR` n'est pas défini dans un shell de login, vous utilisez probablement un artefact GHCR plus ancien et il faut republier / rebuild la feature.
 
+Des models parasites peuvent également être visibles en fonction de la configuration de votre repo. (aws,openai...)
+pour limiter strictement leur vision, Créer un dossier .pi à la racine du projet, puis un fichier settings.json qui contient ce type de déclaration :
+
+```json
+    "enabledModels": [
+        "openai-codex/*",
+        "ollama/*"
+    ]
+
+```
+
 ## Tests (Docker)
 
 Construire l'image de test et vérifier que `pi` est présent:
