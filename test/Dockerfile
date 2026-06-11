@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
 ENV DEBIAN_FRONTEND=noninteractive
 

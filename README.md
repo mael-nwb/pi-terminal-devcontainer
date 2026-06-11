@@ -20,10 +20,10 @@ Depuis GHCR après publication, adaptez le chemin au dépôt publié:
 }
 ```
 
-La feature installe Node via la feature officielle Dev Containers, puis installe Pi avec npm:
+La feature n'a pas besoin d'une feature Node préinstallée. Si `node`/`npm` sont absents ou trop anciens, elle installe d'abord Node.js 22 via l'archive officielle, puis lance l'installateur officiel Pi:
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+curl -fsSL https://pi.dev/install.sh | sh
 ```
 
 ## Configuration Pi hôte
@@ -52,7 +52,7 @@ bash scripts/build_and_test.sh
 
 - `src/pi-cli/`: Feature locale pour Pi CLI
 - `test/pi-cli/`: tests de la feature (scénarios + scripts)
-- `test/Dockerfile`: exécute l'installation de la feature et vérifie la présence de `pi`
+- `test/Dockerfile`: exécute l'installation de la feature sur une image sans Node préinstallé et vérifie la présence de `pi`
 - `scripts/build_and_test.sh`: build + run de l'image de test
 
 ## Crédits
