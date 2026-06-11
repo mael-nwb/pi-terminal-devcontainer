@@ -16,7 +16,7 @@ Depuis GHCR après publication, adaptez le chemin au dépôt publié:
 
 ```json
 "features": {
-  "ghcr.io/<owner>/<repo>/pi-cli:latest": {}
+  "ghcr.io/mael-nwb/pi-terminal-devcontainer/pi-cli:latest": {}
 }
 ```
 
