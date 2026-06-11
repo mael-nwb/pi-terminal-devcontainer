@@ -69,7 +69,7 @@ Ajoute la feature pi-cli à mon Dev Container. Crée ou modifie .devcontainer/de
 "features": {
   "ghcr.io/mael-nwb/pi-terminal-devcontainer/pi-cli:latest": {}
 }
-Si ${HOME}/.pi existe sur l'hôte, ajoute aussi le mount:
+Et ajoute dans le tableau "mounts" (crée-le s'il n'existe pas) :
 "source=${localEnv:HOME}/.pi,target=/home/vscode/.pi,type=bind,consistency=cached"
 EOF
 )"
