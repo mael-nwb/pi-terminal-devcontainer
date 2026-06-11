@@ -55,10 +55,6 @@ bash scripts/build_and_test.sh
 - `test/Dockerfile`: exécute l'installation de la feature sur une image sans Node préinstallé et vérifie la présence de `pi`
 - `scripts/build_and_test.sh`: build + run de l'image de test
 
-## Crédits
-
-Ce projet est largement inspiré de Claude Code, un projet sous licence MIT par Anthropic PBC.
-
 ## Installation via Codex
 
 Collez cette commande dans votre terminal hors du Dev Container. Elle envoie un prompt au CLI Codex pour ajouter la feature Pi à votre projet.
