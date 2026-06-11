@@ -26,7 +26,7 @@ La feature n'a pas besoin d'une feature Node préinstallée. Si `node`/`npm` son
 curl -fsSL https://pi.dev/install.sh | sh
 ```
 
-Dans un Dev Container, la commande `pi` utilise ensuite une copie locale de la configuration dans `~/.pi-devcontainer/agent`. Si une configuration hôte est montée dans `~/.pi/agent`, elle est copiée une seule fois dans ce répertoire interne au conteneur puis isolée. La feature réécrit automatiquement `providers.ollama.baseUrl` de `localhost` vers `host.docker.internal` dans cette copie interne, sans modifier la configuration hôte.
+Dans un Dev Container, la commande `pi` utilise ensuite une copie locale de la configuration dans `~/.pi-devcontainer/agent`. La feature exporte aussi `PI_CODING_AGENT_DIR` vers ce répertoire pour les shells du conteneur. Si une configuration hôte est montée dans `~/.pi/agent`, elle est copiée une seule fois dans ce répertoire interne au conteneur puis isolée. La feature réécrit automatiquement `providers.ollama.baseUrl` de `localhost` vers `host.docker.internal` dans cette copie interne, sans modifier la configuration hôte. Lors de cette copie initiale, `settings.json` est aussi nettoyé de `enabledModels` pour éviter une liste de modèles Ollama obsolète.
 
 ## Configuration Pi hôte
 
@@ -42,7 +42,7 @@ Ajoutez ensuite ce mount dans le `devcontainer.json` consommateur, en adaptant l
 
 Si `${HOME}/.pi` est absent, la feature installe uniquement le CLI Pi. Pi devra être configuré après ouverture du conteneur.
 
-La configuration active de Pi dans le conteneur reste `~/.pi-devcontainer/agent`. Le mount hôte sert uniquement de source initiale.
+La configuration active de Pi dans le conteneur reste `~/.pi-devcontainer/agent`. Le mount hôte sert uniquement de source initiale. Si `/usr/local/bin/pi` est encore un simple symlink ou si `PI_CODING_AGENT_DIR` n'est pas défini dans un shell de login, vous utilisez probablement un artefact GHCR plus ancien et il faut republier / rebuild la feature.
 
 ## Tests (Docker)
 
