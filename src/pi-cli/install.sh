@@ -6,7 +6,7 @@ NODE_DIST_URL="https://nodejs.org/dist/latest-v22.x"
 NODE_INSTALL_DIR="/usr/local/lib/pi-node"
 readonly PI_INSTALLER_URL NODE_DIST_URL NODE_INSTALL_DIR
 
-main() {
+master() {
     echo "Activating feature 'pi-cli'"
 
     require_command curl
@@ -183,4 +183,4 @@ expose_pi_command() {
     ln -sfn "$pi_path" /usr/local/bin/pi
 }
 
-main "$@"
+master "$@"
