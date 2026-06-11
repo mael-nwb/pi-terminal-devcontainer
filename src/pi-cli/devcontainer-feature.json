@@ -1,0 +1,13 @@
+{
+    "name": "Pi CLI",
+    "id": "pi-cli",
+    "version": "1.0.0",
+    "description": "Installs Pi CLI in the devcontainer",
+    "options": {},
+    "dependsOn": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "22"
+        }
+    },
+    "installsAfter": []
+}
