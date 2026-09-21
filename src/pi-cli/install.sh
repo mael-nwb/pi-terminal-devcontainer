@@ -170,6 +170,11 @@ verify_node_archive() {
 }
 
 install_pi() {
+    # Pi's installer now defaults to a "managed" runtime under $HOME/.pi/agent (root's home
+    # during the feature build) and only prints a PATH hint, so the `command -v pi` check below
+    # never finds it and the feature fails with "pi command not found". Force the npm-global
+    # layout: pi lands in the Node prefix that is already on PATH.
+    export PI_LEGACY_INSTALL=1
     curl -fsSL "$PI_INSTALLER_URL" | sh
 }
 
